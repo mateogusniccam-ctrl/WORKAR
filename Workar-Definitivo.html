@@ -1,0 +1,1502 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#0f172a" />
+  <meta name="description" content="Workar - Gestión profesional de talleres automotrices" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <title>Workar</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔧</text></svg>" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <style>
+    :root {
+      --bg: #0b1220;
+      --bg2: #141e2e;
+      --bg3: #1e2d42;
+      --card: #141e2e;
+      --border: #243447;
+      --text: #f1f5f9;
+      --text2: #94a3b8;
+      --accent: #f97316;
+      --accent2: #ea580c;
+      --success: #22c55e;
+      --warning: #eab308;
+      --danger: #ef4444;
+      --info: #3b82f6;
+      --radius: 14px;
+      --shadow: 0 8px 30px rgba(0,0,0,0.35);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100dvh;
+      line-height: 1.5;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .hidden { display: none !important; }
+    button, input, select, textarea { font-family: inherit; font-size: 16px; }
+    button {
+      cursor: pointer; border: none; border-radius: 12px;
+      padding: 13px 18px; font-weight: 600; transition: all .15s;
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    }
+    button:active { transform: scale(.97); }
+    .btn-primary { background: var(--accent); color: #fff; }
+    .btn-primary:hover { background: var(--accent2); }
+    .btn-secondary { background: var(--bg3); color: var(--text); }
+    .btn-success { background: var(--success); color: #fff; }
+    .btn-danger { background: var(--danger); color: #fff; }
+    .btn-outline { background: transparent; border: 1.5px solid var(--border); color: var(--text); }
+    .btn-sm { padding: 8px 13px; font-size: 13px; border-radius: 10px; }
+    .btn-block { width: 100%; }
+    .btn-icon { width: 42px; height: 42px; padding: 0; border-radius: 50%; background: var(--bg3); }
+
+    input, select, textarea {
+      width: 100%; background: var(--bg); border: 1.5px solid var(--border);
+      border-radius: 12px; padding: 13px 14px; color: var(--text); outline: none;
+    }
+    input:focus, select:focus, textarea:focus { border-color: var(--accent); }
+    textarea { min-height: 85px; resize: vertical; }
+    label { display: block; font-size: 13px; color: var(--text2); margin-bottom: 6px; font-weight: 500; }
+    .form-group { margin-bottom: 16px; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    @media (max-width: 480px) { .form-row { grid-template-columns: 1fr; } }
+
+    /* LOGIN */
+    #login-screen {
+      min-height: 100dvh; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; padding: 24px;
+      background: linear-gradient(165deg, #0b1220 0%, #1a2740 45%, #0b1220 100%);
+    }
+    .logo { font-size: 46px; font-weight: 800; letter-spacing: -1.5px; margin-bottom: 6px; }
+    .logo span { color: var(--accent); }
+    .login-card {
+      width: 100%; max-width: 390px; background: var(--card);
+      border-radius: 22px; padding: 32px 24px; box-shadow: var(--shadow);
+      border: 1px solid var(--border);
+    }
+    .login-card h2 { text-align: center; margin-bottom: 24px; font-size: 20px; }
+    .demo-accounts {
+      margin-top: 20px; padding: 14px; background: var(--bg);
+      border-radius: 12px; font-size: 13px; color: var(--text2);
+    }
+    .demo-accounts strong { color: var(--text); }
+    .demo-accounts code { background: var(--bg3); padding: 2px 6px; border-radius: 6px; }
+
+    /* APP */
+    #app { display: flex; flex-direction: column; min-height: 100dvh; max-width: 640px; margin: 0 auto; }
+    header.app-header {
+      position: sticky; top: 0; z-index: 100; background: rgba(11,18,32,.92);
+      backdrop-filter: blur(12px); border-bottom: 1px solid var(--border);
+      padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    }
+    .header-title { font-size: 19px; font-weight: 800; display: flex; align-items: center; gap: 8px; }
+    .badge-role {
+      font-size: 11px; background: var(--accent); color: #fff;
+      padding: 3px 9px; border-radius: 20px; font-weight: 600;
+    }
+    main { flex: 1; padding: 16px; padding-bottom: 100px; }
+    nav.bottom-nav {
+      position: fixed; bottom: 0; left: 0; right: 0; background: var(--bg2);
+      border-top: 1px solid var(--border); display: flex; justify-content: space-around;
+      padding: 8px 0 calc(10px + env(safe-area-inset-bottom)); z-index: 100;
+      max-width: 640px; margin: 0 auto;
+    }
+    .nav-item {
+      display: flex; flex-direction: column; align-items: center; gap: 3px;
+      background: none; color: var(--text2); font-size: 11px; padding: 6px 10px;
+      border-radius: 12px; min-width: 60px;
+    }
+    .nav-item.active { color: var(--accent); }
+
+    .card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 16px; margin-bottom: 12px;
+      box-shadow: 0 2px 12px rgba(0,0,0,.2);
+    }
+    .card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
+    .card-title { font-weight: 700; font-size: 16px; }
+    .card-meta { font-size: 13px; color: var(--text2); margin-top: 3px; }
+
+    .status-badge {
+      display: inline-block; padding: 4px 11px; border-radius: 20px;
+      font-size: 12px; font-weight: 600; white-space: nowrap;
+    }
+    .st-ingresado { background: #1e3a5f; color: #60a5fa; }
+    .st-diagnostico { background: #3b2f1a; color: #fbbf24; }
+    .st-aprobacion { background: #3b1f1f; color: #f87171; }
+    .st-reparacion { background: #1a3b2f; color: #4ade80; }
+    .st-terminado { background: #1e3a2f; color: #34d399; }
+    .st-entregado { background: #2a2a2a; color: #a3a3a3; }
+
+    .stats-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 10px; margin-bottom: 20px; }
+    .stat-card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 16px; text-align: center;
+    }
+    .stat-card .num { font-size: 30px; font-weight: 800; color: var(--accent); }
+    .stat-card .label { font-size: 12px; color: var(--text2); margin-top: 2px; }
+
+    .section-title {
+      font-size: 15px; font-weight: 700; margin: 22px 0 12px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .search-box { position: relative; margin-bottom: 16px; }
+    .search-box input { padding-left: 42px; }
+    .search-box::before {
+      content: '🔍'; position: absolute; left: 14px; top: 50%;
+      transform: translateY(-50%); font-size: 16px;
+    }
+
+    .empty-state { text-align: center; padding: 48px 20px; color: var(--text2); }
+    .empty-state .icon { font-size: 52px; margin-bottom: 12px; }
+
+    .modal-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,.75); z-index: 200;
+      display: flex; align-items: flex-end; justify-content: center;
+    }
+    .modal {
+      background: var(--bg2); border-radius: 22px 22px 0 0; width: 100%;
+      max-width: 640px; max-height: 93dvh; overflow-y: auto;
+      padding: 22px 16px 36px; animation: slideUp .25s ease;
+    }
+    @keyframes slideUp {
+      from { transform: translateY(100%); } to { transform: translateY(0); }
+    }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    .modal-header h3 { font-size: 18px; }
+    .modal-close { background: var(--bg3); width: 36px; height: 36px; border-radius: 50%; font-size: 18px; }
+
+    .check-item {
+      background: var(--bg); border: 1px solid var(--border);
+      border-radius: 12px; padding: 12px; margin-bottom: 8px;
+    }
+    .check-item-header { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+
+    .photo-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; margin-top: 8px; }
+    .photo-thumb { aspect-ratio: 1; border-radius: 10px; object-fit: cover; width: 100%; background: var(--bg3); }
+
+    #client-view { min-height: 100dvh; padding: 24px 16px; max-width: 520px; margin: 0 auto; }
+    .client-header { text-align: center; margin-bottom: 28px; }
+    .client-header .logo { font-size: 34px; }
+
+    .progress-steps {
+      display: flex; justify-content: space-between; margin: 24px 0; position: relative;
+    }
+    .progress-steps::before {
+      content: ''; position: absolute; top: 14px; left: 8%; right: 8%;
+      height: 3px; background: var(--bg3); z-index: 0;
+    }
+    .step { z-index: 1; text-align: center; flex: 1; }
+    .step-dot {
+      width: 28px; height: 28px; border-radius: 50%; background: var(--bg3);
+      margin: 0 auto 6px; display: flex; align-items: center; justify-content: center;
+      font-size: 12px; font-weight: 700;
+    }
+    .step.active .step-dot { background: var(--accent); }
+    .step.done .step-dot { background: var(--success); }
+    .step-label { font-size: 10px; color: var(--text2); }
+
+    .fab {
+      position: fixed; bottom: 95px; right: 20px; width: 58px; height: 58px;
+      border-radius: 50%; background: var(--accent); color: #fff; font-size: 30px;
+      box-shadow: 0 6px 24px rgba(249,115,22,.45); z-index: 90;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    .toast {
+      position: fixed; top: 22px; left: 50%; transform: translateX(-50%);
+      background: var(--bg3); color: #fff; padding: 13px 24px; border-radius: 12px;
+      z-index: 300; font-size: 14px; box-shadow: var(--shadow); animation: fadeIn .3s;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateX(-50%) translateY(-12px); }
+      to { opacity: 1; transform: translateX(-50%) translateY(0); }
+    }
+
+    .tabs { display: flex; gap: 6px; margin-bottom: 16px; overflow-x: auto; padding-bottom: 4px; }
+    .tab {
+      padding: 8px 14px; border-radius: 20px; background: var(--bg3);
+      color: var(--text2); font-size: 13px; font-weight: 600; white-space: nowrap;
+    }
+    .tab.active { background: var(--accent); color: #fff; }
+
+    .qr-container {
+      display: flex; justify-content: center; margin: 16px 0;
+      padding: 18px; background: #fff; border-radius: 14px;
+    }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th, td { padding: 9px 6px; text-align: left; border-bottom: 1px solid var(--border); }
+    th { color: var(--text2); font-weight: 600; }
+    .chip {
+      display: inline-block; background: var(--bg3); padding: 5px 11px;
+      border-radius: 20px; font-size: 12px; margin: 3px 2px;
+    }
+    .alert {
+      background: #3b2f1a; border: 1px solid #854d0e; color: #fbbf24;
+      padding: 12px 14px; border-radius: 12px; font-size: 13px; margin-bottom: 12px;
+    }
+    .alert-danger {
+      background: #3b1f1f; border-color: #991b1b; color: #f87171;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- LOGIN -->
+  <div id="login-screen">
+    <div class="logo">Work<span>ar</span></div>
+    <p style="color:var(--text2);margin-bottom:28px;font-size:14px">Gestión profesional de talleres</p>
+    <div class="login-card">
+      <h2>Iniciar sesión</h2>
+      <div class="form-group">
+        <label>Usuario</label>
+        <input type="text" id="login-user" placeholder="admin o mecanico" autocomplete="username" />
+      </div>
+      <div class="form-group">
+        <label>Contraseña</label>
+        <input type="password" id="login-pass" placeholder="••••••••" autocomplete="current-password" />
+      </div>
+      <button class="btn-primary btn-block" onclick="doLogin()">Entrar</button>
+      <div class="demo-accounts">
+        <strong>Cuentas de demo:</strong><br><br>
+        Admin → <code>admin</code> / <code>admin123</code><br>
+        Mecánico → <code>mecanico</code> / <code>mec123</code>
+      </div>
+    </div>
+  </div>
+
+  <!-- APP -->
+  <div id="app" class="hidden">
+    <header class="app-header">
+      <div class="header-title">
+        Work<span style="color:var(--accent)">ar</span>
+        <span class="badge-role" id="user-role-badge">Admin</span>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <span id="user-name" style="font-size:13px;color:var(--text2)"></span>
+        <button class="btn-icon" onclick="logout()" title="Cerrar sesión">⏻</button>
+      </div>
+    </header>
+    <main id="main-content"></main>
+    <nav class="bottom-nav" id="bottom-nav"></nav>
+  </div>
+
+  <!-- CLIENT PUBLIC VIEW -->
+  <div id="client-view" class="hidden"></div>
+
+  <!-- MODAL -->
+  <div id="modal-overlay" class="modal-overlay hidden" onclick="if(event.target===this)closeModal()">
+    <div class="modal" id="modal-content"></div>
+  </div>
+
+  <div id="toast" class="toast hidden"></div>
+
+<script>
+// ===================== CONFIG & STATE =====================
+const STATUSES = ['Ingresado','En diagnóstico','Esperando aprobación','En reparación','Terminado','Entregado'];
+const STATUS_CLASS = {
+  'Ingresado':'st-ingresado', 'En diagnóstico':'st-diagnostico',
+  'Esperando aprobación':'st-aprobacion', 'En reparación':'st-reparacion',
+  'Terminado':'st-terminado', 'Entregado':'st-entregado'
+};
+const INSPECTION = {
+  exterior: ['Rayones','Abolladuras','Vidrios','Espejos','Luces','Carrocería'],
+  interior: ['Asientos','Tablero','Radio','Accesorios','Objetos personales'],
+  general:  ['Neumáticos','Batería','Niveles de líquidos','Luces','Otros']
+};
+const MAINT_TYPES = [
+  'Aceite de motor','Filtros','Frenos','Refrigerante','Líquido de frenos',
+  'Correa de distribución','Neumáticos','Revisión técnica','Otro'
+];
+
+let state = {
+  user: null, view: 'dashboard', currentOrderId: null,
+  clients: [], vehicles: [], orders: [], labors: [], workers: [], maintenances: []
+};
+
+const DEFAULT_LABORS = [
+  {id:1,name:'Cambio de aceite',price:25000},
+  {id:2,name:'Cambio de filtros',price:18000},
+  {id:3,name:'Cambio de pastillas de freno',price:45000},
+  {id:4,name:'Cambio de correa de distribución',price:120000},
+  {id:5,name:'Diagnóstico electrónico',price:35000},
+  {id:6,name:'Reparación de motor',price:250000},
+  {id:7,name:'Reparación de frenos',price:80000},
+  {id:8,name:'Mantención preventiva',price:60000},
+  {id:9,name:'Alineación y balanceo',price:30000},
+  {id:10,name:'Cambio de batería',price:15000}
+];
+
+// ===================== PERSISTENCE =====================
+function loadData() {
+  try {
+    const raw = localStorage.getItem('workar_v2');
+    if (raw) {
+      const d = JSON.parse(raw);
+      Object.assign(state, {
+        clients: d.clients||[], vehicles: d.vehicles||[], orders: d.orders||[],
+        labors: d.labors||DEFAULT_LABORS, workers: d.workers||defaultWorkers(),
+        maintenances: d.maintenances||[]
+      });
+    } else {
+      state.labors = DEFAULT_LABORS;
+      state.workers = defaultWorkers();
+      seedDemo();
+    }
+  } catch(e) {
+    state.labors = DEFAULT_LABORS;
+    state.workers = defaultWorkers();
+  }
+}
+function defaultWorkers() {
+  return [
+    {id:1, username:'admin', password:'admin123', name:'Administrador', role:'admin'},
+    {id:2, username:'mecanico', password:'mec123', name:'Juan Pérez', role:'worker'}
+  ];
+}
+function saveData() {
+  localStorage.setItem('workar_v2', JSON.stringify({
+    clients: state.clients, vehicles: state.vehicles, orders: state.orders,
+    labors: state.labors, workers: state.workers, maintenances: state.maintenances
+  }));
+}
+function seedDemo() {
+  state.clients.push({id:1, name:'Carlos Rodríguez', phone:'+56 9 8765 4321', email:'carlos@email.cl', notes:'Cliente frecuente'});
+  state.vehicles.push({id:1, clientId:1, patente:'ABCD12', marca:'Toyota', modelo:'Corolla', año:2019, color:'Blanco', combustible:'Gasolina', km:78500, notes:''});
+  state.orders.push({
+    id:1, number:'OT-2026-0001', clientId:1, vehicleId:1, token:'demo-token-abc123',
+    status:'En reparación', fechaIngreso:new Date().toISOString(), kmIngreso:78500,
+    combustibleNivel:'3/4', motivo:'Mantención 80.000 km + ruido en frenos',
+    diagnostico:'Pastillas de freno delanteras gastadas. Aceite y filtros por cambiar.',
+    trabajosRealizados:[], mecánicoId:2, repuestos:[], fotos:[], inspeccion:{},
+    observaciones:'', fechaTermino:null, fechaEntrega:null, pagoEstado:'Pendiente',
+    otrosCostos:0, presupuestoVisible:true, solicitudes:[]
+  });
+  state.maintenances.push({
+    id:1, vehicleId:1, tipo:'Aceite de motor', lastKm:75000, lastDate:'2025-10-01',
+    intervalKm:5000, intervalMonths:12, nextKm:80000, nextDate:'2026-10-01'
+  });
+  saveData();
+}
+
+// ===================== UTILS =====================
+const uid = () => Date.now() + Math.floor(Math.random()*999);
+const genToken = () => 'tk-' + Math.random().toString(36).slice(2,11) + Date.now().toString(36);
+function genOrderNumber() {
+  const y = new Date().getFullYear();
+  return `OT-${y}-${String(state.orders.length+1).padStart(4,'0')}`;
+}
+const formatMoney = n => '$' + (n||0).toLocaleString('es-CL');
+function formatDate(iso) {
+  if (!iso) return '—';
+  return new Date(iso).toLocaleDateString('es-CL',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
+}
+function toast(msg, ms=2500) {
+  const el = document.getElementById('toast');
+  el.textContent = msg; el.classList.remove('hidden');
+  clearTimeout(el._t); el._t = setTimeout(()=>el.classList.add('hidden'), ms);
+}
+const getClient = id => state.clients.find(c=>c.id===id);
+const getVehicle = id => state.vehicles.find(v=>v.id===id);
+const getWorker = id => state.workers.find(w=>w.id===id);
+const isAdmin = () => state.user?.role === 'admin';
+
+// ===================== AUTH =====================
+function doLogin() {
+  const u = document.getElementById('login-user').value.trim().toLowerCase();
+  const p = document.getElementById('login-pass').value;
+  const worker = state.workers.find(w => w.username===u && w.password===p);
+  if (!worker) return toast('Usuario o contraseña incorrectos');
+  state.user = worker;
+  localStorage.setItem('workar_user', JSON.stringify(worker));
+  showApp();
+}
+function logout() {
+  state.user = null;
+  localStorage.removeItem('workar_user');
+  document.getElementById('app').classList.add('hidden');
+  document.getElementById('client-view').classList.add('hidden');
+  document.getElementById('login-screen').classList.remove('hidden');
+}
+function showApp() {
+  document.getElementById('login-screen').classList.add('hidden');
+  document.getElementById('client-view').classList.add('hidden');
+  document.getElementById('app').classList.remove('hidden');
+  document.getElementById('user-role-badge').textContent = isAdmin() ? 'Admin' : 'Mecánico';
+  document.getElementById('user-name').textContent = state.user.name;
+  renderNav();
+  navigate('dashboard');
+}
+
+// ===================== NAVIGATION =====================
+function renderNav() {
+  const items = isAdmin()
+    ? [{id:'dashboard',icon:'📊',label:'Panel'},{id:'orders',icon:'📋',label:'Órdenes'},{id:'clients',icon:'👥',label:'Clientes'},{id:'labors',icon:'💰',label:'Tarifas'},{id:'more',icon:'⚙️',label:'Más'}]
+    : [{id:'dashboard',icon:'📊',label:'Mis órdenes'},{id:'orders',icon:'📋',label:'Órdenes'},{id:'clients',icon:'👥',label:'Clientes'},{id:'more',icon:'⚙️',label:'Más'}];
+  document.getElementById('bottom-nav').innerHTML = items.map(i =>
+    `<button class="nav-item ${state.view===i.id?'active':''}" onclick="navigate('${i.id}')">
+      <span style="font-size:20px">${i.icon}</span>${i.label}
+    </button>`
+  ).join('');
+}
+function navigate(view) {
+  state.view = view;
+  renderNav();
+  const main = document.getElementById('main-content');
+  if (view==='dashboard') renderDashboard(main);
+  else if (view==='orders') renderOrders(main);
+  else if (view==='clients') renderClients(main);
+  else if (view==='labors') renderLabors(main);
+  else if (view==='more') renderMore(main);
+  else if (view==='order-detail') renderOrderDetail(main, state.currentOrderId);
+}
+
+// ===================== DASHBOARD =====================
+function renderDashboard(el) {
+  let orders = isAdmin() ? state.orders : state.orders.filter(o => o.mecánicoId===state.user.id || !o.mecánicoId);
+  const counts = {}; STATUSES.forEach(s => counts[s]=0);
+  orders.forEach(o => { if(counts[o.status]!==undefined) counts[o.status]++; });
+  const pendingPay = orders.filter(o => o.pagoEstado==='Pendiente' && !['Ingresado','Entregado'].includes(o.status)).length;
+  const requests = orders.filter(o => (o.solicitudes||[]).length > 0).length;
+  const upcoming = state.maintenances.filter(m => {
+    const v = getVehicle(m.vehicleId);
+    if (!v) return false;
+    return v.km >= (m.nextKm - 1000) || new Date(m.nextDate) <= new Date(Date.now()+30*864e5);
+  });
+
+  el.innerHTML = `
+    <div class="stats-grid">
+      <div class="stat-card"><div class="num">${orders.filter(o=>o.status!=='Entregado').length}</div><div class="label">En taller</div></div>
+      <div class="stat-card"><div class="num">${counts['Esperando aprobación']||0}</div><div class="label">Esperan aprobación</div></div>
+      <div class="stat-card"><div class="num">${counts['En reparación']||0}</div><div class="label">En reparación</div></div>
+      <div class="stat-card"><div class="num">${pendingPay}</div><div class="label">Pagos pendientes</div></div>
+    </div>
+
+    ${requests > 0 ? `<div class="alert">🔔 ${requests} solicitud(es) de alternativa económica de clientes</div>` : ''}
+
+    ${upcoming.length > 0 ? `
+      <div class="section-title">Mantenimientos próximos</div>
+      ${upcoming.map(m => {
+        const v = getVehicle(m.vehicleId);
+        return `<div class="card" style="border-left:4px solid var(--warning)">
+          <strong>${v?.patente||'—'}</strong> · ${m.tipo}<br>
+          <span style="font-size:13px;color:var(--text2)">Próximo: ${m.nextKm?.toLocaleString('es-CL')} km o ${m.nextDate||'—'}</span>
+        </div>`;
+      }).join('')}
+    ` : ''}
+
+    <div class="section-title">
+      Vehículos en taller
+      ${isAdmin() ? `<button class="btn-primary btn-sm" onclick="openNewOrder()">+ Nueva orden</button>` : ''}
+    </div>
+    ${orders.filter(o=>o.status!=='Entregado').length===0
+      ? `<div class="empty-state"><div class="icon">🚗</div>No hay vehículos en el taller</div>`
+      : orders.filter(o=>o.status!=='Entregado')
+          .sort((a,b)=>new Date(b.fechaIngreso)-new Date(a.fechaIngreso))
+          .map(o => orderCard(o)).join('')
+    }
+  `;
+}
+
+function orderCard(o) {
+  const v = getVehicle(o.vehicleId), c = getClient(o.clientId);
+  return `<div class="card" onclick="openOrder(${o.id})" style="cursor:pointer">
+    <div class="card-header">
+      <div>
+        <div class="card-title">${v?.patente||'—'} · ${v?.marca||''} ${v?.modelo||''}</div>
+        <div class="card-meta">${c?.name||''} · ${o.number}</div>
+      </div>
+      <span class="status-badge ${STATUS_CLASS[o.status]||''}">${o.status}</span>
+    </div>
+    <div class="card-meta">${formatDate(o.fechaIngreso)} · ${(o.kmIngreso||0).toLocaleString('es-CL')} km</div>
+    ${o.motivo ? `<div style="margin-top:8px;font-size:13px;color:var(--text2)">${o.motivo}</div>` : ''}
+    ${(o.solicitudes||[]).length ? `<div style="margin-top:6px;font-size:12px;color:var(--warning)">🔔 Solicitud de cliente</div>` : ''}
+  </div>`;
+}
+
+// ===================== ORDERS =====================
+function renderOrders(el) {
+  let orders = isAdmin() ? state.orders : state.orders.filter(o => o.mecánicoId===state.user.id || !o.mecánicoId);
+  el.innerHTML = `
+    <div class="search-box"><input type="text" id="search-orders" placeholder="Buscar por patente, cliente u orden..." oninput="filterOrders()" /></div>
+    <div class="tabs" id="order-tabs">
+      <button class="tab active" onclick="setOrderFilter(this,'all')">Todas</button>
+      ${STATUSES.map(s=>`<button class="tab" onclick="setOrderFilter(this,'${s}')">${s}</button>`).join('')}
+    </div>
+    <div id="orders-list">
+      ${orders.length===0 ? `<div class="empty-state"><div class="icon">📋</div>No hay órdenes</div>`
+        : orders.sort((a,b)=>new Date(b.fechaIngreso)-new Date(a.fechaIngreso)).map(o=>orderCard(o)).join('')}
+    </div>
+    ${isAdmin() ? `<button class="fab" onclick="openNewOrder()">+</button>` : ''}
+  `;
+}
+let currentOrderFilter = 'all';
+function setOrderFilter(btn, filter) {
+  currentOrderFilter = filter;
+  document.querySelectorAll('#order-tabs .tab').forEach(t=>t.classList.remove('active'));
+  btn.classList.add('active');
+  filterOrders();
+}
+function filterOrders() {
+  const q = (document.getElementById('search-orders')?.value||'').toLowerCase();
+  let orders = isAdmin() ? state.orders : state.orders.filter(o => o.mecánicoId===state.user.id || !o.mecánicoId);
+  if (currentOrderFilter!=='all') orders = orders.filter(o=>o.status===currentOrderFilter);
+  if (q) orders = orders.filter(o => {
+    const v=getVehicle(o.vehicleId), c=getClient(o.clientId);
+    return (v?.patente||'').toLowerCase().includes(q) || (c?.name||'').toLowerCase().includes(q) || (o.number||'').toLowerCase().includes(q);
+  });
+  const list = document.getElementById('orders-list');
+  if (list) list.innerHTML = orders.length===0
+    ? `<div class="empty-state"><div class="icon">🔍</div>Sin resultados</div>`
+    : orders.sort((a,b)=>new Date(b.fechaIngreso)-new Date(a.fechaIngreso)).map(o=>orderCard(o)).join('');
+}
+
+// ===================== ORDER DETAIL =====================
+function openOrder(id) {
+  state.currentOrderId = id;
+  state.view = 'order-detail';
+  renderNav();
+  renderOrderDetail(document.getElementById('main-content'), id);
+}
+function renderOrderDetail(el, id) {
+  const o = state.orders.find(x=>x.id===id);
+  if (!o) return navigate('orders');
+  const v = getVehicle(o.vehicleId), c = getClient(o.clientId), worker = getWorker(o.mecánicoId);
+  const totalLabors = (o.trabajosRealizados||[]).reduce((s,t)=>s+(t.price||0),0);
+  const totalParts = (o.repuestos||[]).reduce((s,p)=>s+(p.total||0),0);
+  const total = totalLabors + totalParts + (o.otrosCostos||0);
+
+  el.innerHTML = `
+    <button class="btn-outline btn-sm" onclick="navigate('orders')" style="margin-bottom:12px">← Volver</button>
+
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">${o.number}</div>
+          <div class="card-meta">${formatDate(o.fechaIngreso)}</div>
+        </div>
+        <span class="status-badge ${STATUS_CLASS[o.status]}">${o.status}</span>
+      </div>
+      <div style="margin-top:12px">
+        <strong>${v?.patente||'—'}</strong> · ${v?.marca||''} ${v?.modelo||''} (${v?.año||''})
+        <br><span style="color:var(--text2);font-size:13px">${c?.name||''} · ${c?.phone||''}</span>
+      </div>
+    </div>
+
+    ${(o.solicitudes||[]).length ? `
+      <div class="alert">
+        🔔 El cliente solicitó una alternativa más económica
+        <button class="btn-sm btn-secondary" style="margin-top:8px" onclick="clearSolicitudes(${o.id})">Marcar como atendida</button>
+      </div>
+    ` : ''}
+
+    <div class="section-title">Estado</div>
+    <div class="card">
+      <select id="order-status" onchange="changeStatus(${o.id},this.value)">
+        ${STATUSES.map(s=>`<option value="${s}" ${o.status===s?'selected':''}>${s}</option>`).join('')}
+      </select>
+      <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn-secondary btn-sm" onclick="showQR(${o.id})">📱 QR Cliente</button>
+        <button class="btn-secondary btn-sm" onclick="generatePDF(${o.id})">📄 PDF</button>
+        ${isAdmin() ? `<button class="btn-secondary btn-sm" onclick="togglePago(${o.id})">${o.pagoEstado==='Pagado'?'✓ Pagado':'💰 Marcar pagado'}</button>` : ''}
+      </div>
+    </div>
+
+    <div class="section-title">Datos de ingreso</div>
+    <div class="card">
+      <div class="form-row">
+        <div><label>Kilometraje</label><div>${(o.kmIngreso||0).toLocaleString('es-CL')} km</div></div>
+        <div><label>Combustible</label><div>${o.combustibleNivel||'—'}</div></div>
+      </div>
+      <div style="margin-top:10px"><label>Motivo</label><div>${o.motivo||'—'}</div></div>
+      <div style="margin-top:10px">
+        <label>Diagnóstico</label>
+        <textarea id="order-diag" onchange="updateField(${o.id},'diagnostico',this.value)" placeholder="Diagnóstico técnico...">${o.diagnostico||''}</textarea>
+      </div>
+      ${worker ? `<div style="margin-top:10px"><label>Mecánico</label><div>${worker.name}</div></div>` : ''}
+      ${isAdmin() ? `
+        <div style="margin-top:10px">
+          <label>Asignar mecánico</label>
+          <select onchange="assignWorker(${o.id},this.value)">
+            <option value="">— Sin asignar —</option>
+            ${state.workers.filter(w=>w.role==='worker').map(w=>`<option value="${w.id}" ${o.mecánicoId===w.id?'selected':''}>${w.name}</option>`).join('')}
+          </select>
+        </div>
+      ` : ''}
+    </div>
+
+    <div class="section-title">
+      Trabajos realizados
+      <button class="btn-primary btn-sm" onclick="openAddLabor(${o.id})">+ Agregar</button>
+    </div>
+    <div class="card">
+      ${(o.trabajosRealizados||[]).length===0
+        ? `<div style="color:var(--text2);font-size:13px">Sin trabajos registrados</div>`
+        : `<table><tr><th>Trabajo</th>${isAdmin()?'<th>Precio</th>':''}<th></th></tr>
+          ${(o.trabajosRealizados||[]).map((t,i)=>`<tr>
+            <td>${t.name}</td>
+            ${isAdmin()?`<td>${formatMoney(t.price)}</td>`:'<td></td>'}
+            <td><button class="btn-danger btn-sm" onclick="removeLabor(${o.id},${i})">✕</button></td>
+          </tr>`).join('')}</table>`}
+    </div>
+
+    <div class="section-title">
+      Repuestos
+      <button class="btn-primary btn-sm" onclick="openAddPart(${o.id})">+ Agregar</button>
+    </div>
+    <div class="card">
+      ${(o.repuestos||[]).length===0
+        ? `<div style="color:var(--text2);font-size:13px">Sin repuestos</div>`
+        : (o.repuestos||[]).map((p,i)=>`
+          <div style="padding:12px 0;border-bottom:1px solid var(--border)">
+            <strong>${p.name}</strong> ${p.marca?`· ${p.marca}`:''}
+            <div style="font-size:13px;color:var(--text2)">
+              ${p.codigo?`Cód: ${p.codigo} · `:''}Cant: ${p.cantidad} · ${formatMoney(p.precioUnitario)} c/u
+            </div>
+            <div style="font-weight:600;margin-top:4px">${formatMoney(p.total)}</div>
+            ${p.fotos?.length ? `<div class="photo-grid">${p.fotos.map(f=>`<img class="photo-thumb" src="${f}">`).join('')}</div>` : ''}
+            <button class="btn-danger btn-sm" style="margin-top:6px" onclick="removePart(${o.id},${i})">Eliminar</button>
+          </div>`).join('')}
+    </div>
+
+    <div class="section-title">Presupuesto</div>
+    <div class="card">
+      ${isAdmin() ? `
+        <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+          <span>Mano de obra</span><strong>${formatMoney(totalLabors)}</strong>
+        </div>` : `<div style="color:var(--text2);font-size:13px;margin-bottom:8px">Los precios de mano de obra son privados</div>`}
+      <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+        <span>Repuestos</span><strong>${formatMoney(totalParts)}</strong>
+      </div>
+      <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+        <span>Otros costos</span>
+        ${isAdmin()
+          ? `<input type="number" value="${o.otrosCostos||0}" style="width:120px;text-align:right" onchange="updateOtros(${o.id},this.value)">`
+          : `<strong>${formatMoney(o.otrosCostos||0)}</strong>`}
+      </div>
+      <hr style="border-color:var(--border);margin:12px 0">
+      <div style="display:flex;justify-content:space-between;font-size:18px">
+        <strong>Total</strong><strong style="color:var(--accent)">${formatMoney(total)}</strong>
+      </div>
+      <div style="margin-top:8px;font-size:13px;color:var(--text2)">Estado de pago: <strong>${o.pagoEstado}</strong></div>
+    </div>
+
+    <div class="section-title">Observaciones</div>
+    <div class="card">
+      <textarea onchange="updateField(${o.id},'observaciones',this.value)" placeholder="Observaciones...">${o.observaciones||''}</textarea>
+    </div>
+
+    <div class="section-title">Inspección de recepción</div>
+    <div class="card">
+      <button class="btn-secondary btn-block" onclick="openInspection(${o.id})">
+        ${(o.inspeccion && Object.keys(o.inspeccion).length) ? 'Ver / Editar inspección' : 'Completar lista de inspección'}
+      </button>
+    </div>
+
+    <div style="height:50px"></div>
+  `;
+}
+
+function changeStatus(id, status) {
+  const o = state.orders.find(x=>x.id===id);
+  if (!o) return;
+  o.status = status;
+  if (status==='Terminado') o.fechaTermino = new Date().toISOString();
+  if (status==='Entregado') o.fechaEntrega = new Date().toISOString();
+  saveData(); toast('Estado actualizado');
+  renderOrderDetail(document.getElementById('main-content'), id);
+}
+function togglePago(id) {
+  const o = state.orders.find(x=>x.id===id);
+  if (!o) return;
+  o.pagoEstado = o.pagoEstado==='Pagado' ? 'Pendiente' : 'Pagado';
+  saveData(); toast('Pago: '+o.pagoEstado);
+  renderOrderDetail(document.getElementById('main-content'), id);
+}
+function updateOtros(id, val) {
+  const o = state.orders.find(x=>x.id===id);
+  if (o) { o.otrosCostos = parseInt(val)||0; saveData(); renderOrderDetail(document.getElementById('main-content'), id); }
+}
+function updateField(id, field, val) {
+  const o = state.orders.find(x=>x.id===id);
+  if (o) { o[field] = val; saveData(); }
+}
+function assignWorker(id, workerId) {
+  const o = state.orders.find(x=>x.id===id);
+  if (o) { o.mecánicoId = workerId ? parseInt(workerId) : null; saveData(); toast('Mecánico asignado'); }
+}
+function clearSolicitudes(id) {
+  const o = state.orders.find(x=>x.id===id);
+  if (o) { o.solicitudes = []; saveData(); toast('Solicitud marcada como atendida'); renderOrderDetail(document.getElementById('main-content'), id); }
+}
+
+// ===================== LABORS =====================
+function openAddLabor(orderId) {
+  openModal(`
+    <div class="modal-header"><h3>Agregar trabajo</h3><button class="modal-close" onclick="closeModal()">✕</button></div>
+    <div class="form-group">
+      <label>Seleccionar del catálogo</label>
+      <select id="labor-select" onchange="onLaborSelect()">
+        <option value="">— Elegir —</option>
+        ${state.labors.map(l=>`<option value="${l.id}" data-price="${l.price}">${l.name}${isAdmin()?` (${formatMoney(l.price)})`:''}</option>`).join('')}
+        <option value="custom">+ Trabajo personalizado</option>
+      </select>
+    </div>
+    <div id="custom-labor" class="hidden">
+      <div class="form-group"><label>Nombre del trabajo</label><input type="text" id="labor-name" /></div>
+    </div>
+    ${isAdmin() ? `<div class="form-group"><label>Precio mano de obra</label><input type="number" id="labor-price" /></div>`
+      : `<input type="hidden" id="labor-price" value="0"><p style="font-size:13px;color:var(--text2);margin-bottom:16px">El precio se asigna automáticamente (solo visible para el administrador).</p>`}
+    <button class="btn-primary btn-block" onclick="addLabor(${orderId})">Agregar trabajo</button>
+  `);
+}
+function onLaborSelect() {
+  const sel = document.getElementById('labor-select');
+  const custom = document.getElementById('custom-labor');
+  const priceInput = document.getElementById('labor-price');
+  if (sel.value==='custom') { custom.classList.remove('hidden'); if(priceInput) priceInput.value=''; }
+  else if (sel.value) {
+    custom.classList.add('hidden');
+    const opt = sel.selectedOptions[0];
+    if (priceInput) priceInput.value = opt.dataset.price || 0;
+  }
+}
+function addLabor(orderId) {
+  const o = state.orders.find(x=>x.id===orderId);
+  if (!o) return;
+  const sel = document.getElementById('labor-select');
+  let name, price;
+  if (sel.value==='custom') {
+    name = document.getElementById('labor-name').value.trim();
+    price = parseInt(document.getElementById('labor-price').value)||0;
+    if (!name) return toast('Ingresa el nombre del trabajo');
+  } else if (sel.value) {
+    const labor = state.labors.find(l=>l.id==sel.value);
+    name = labor.name;
+    price = isAdmin() ? (parseInt(document.getElementById('labor-price').value)||labor.price) : labor.price;
+  } else return toast('Selecciona un trabajo');
+  if (!o.trabajosRealizados) o.trabajosRealizados = [];
+  o.trabajosRealizados.push({name, price});
+  saveData(); closeModal(); toast('Trabajo agregado');
+  renderOrderDetail(document.getElementById('main-content'), orderId);
+}
+function removeLabor(orderId, idx) {
+  const o = state.orders.find(x=>x.id===orderId);
+  if (o?.trabajosRealizados) { o.trabajosRealizados.splice(idx,1); saveData(); renderOrderDetail(document.getElementById('main-content'), orderId); }
+}
+
+// ===================== PARTS =====================
+function openAddPart(orderId) {
+  openModal(`
+    <div class="modal-header"><h3>Agregar repuesto</h3><button class="modal-close" onclick="closeModal()">✕</button></div>
+    <div class="form-group"><label>Nombre *</label><input type="text" id="part-name" placeholder="Ej: Pastillas de freno delanteras" /></div>
+    <div class="form-row">
+      <div class="form-group"><label>Marca</label><input type="text" id="part-marca" placeholder="Bosch, NGK..." /></div>
+      <div class="form-group"><label>Código / Ref.</label><input type="text" id="part-codigo" /></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Cantidad *</label><input type="number" id="part-qty" value="1" min="1" /></div>
+      <div class="form-group"><label>Precio unitario *</label><input type="number" id="part-price" placeholder="0" /></div>
+    </div>
+    <div class="form-group"><label>Garantía</label><input type="text" id="part-garantia" placeholder="Ej: 6 meses / 10.000 km" /></div>
+    <div class="form-group"><label>Observaciones</label><textarea id="part-obs"></textarea></div>
+    <div class="form-group">
+      <label>Fotografías del repuesto</label>
+      <input type="file" id="part-photos" accept="image/*" multiple capture="environment" />
+      <div id="part-photo-preview" class="photo-grid"></div>
+    </div>
+    <p style="font-size:12px;color:var(--text2);margin-bottom:12px">💡 Fotografía el envase o etiqueta. OCR se integrará en una versión futura.</p>
+    <button class="btn-primary btn-block" onclick="addPart(${orderId})">Guardar repuesto</button>
+  `);
+  document.getElementById('part-photos').addEventListener('change', function() {
+    const preview = document.getElementById('part-photo-preview');
+    preview.innerHTML = '';
+    Array.from(this.files).forEach(f => {
+      const r = new FileReader();
+      r.onload = e => preview.innerHTML += `<img class="photo-thumb" src="${e.target.result}">`;
+      r.readAsDataURL(f);
+    });
+  });
+}
+function addPart(orderId) {
+  const o = state.orders.find(x=>x.id===orderId);
+  if (!o) return;
+  const name = document.getElementById('part-name').value.trim();
+  const qty = parseInt(document.getElementById('part-qty').value)||1;
+  const price = parseInt(document.getElementById('part-price').value)||0;
+  if (!name) return toast('Nombre obligatorio');
+  const files = document.getElementById('part-photos').files;
+  const fotos = [];
+  let pending = files.length;
+  const finish = () => {
+    if (!o.repuestos) o.repuestos = [];
+    o.repuestos.push({
+      name, marca: document.getElementById('part-marca').value.trim(),
+      codigo: document.getElementById('part-codigo').value.trim(),
+      cantidad: qty, precioUnitario: price, total: qty*price,
+      garantia: document.getElementById('part-garantia').value.trim(),
+      observaciones: document.getElementById('part-obs').value.trim(), fotos
+    });
+    saveData(); closeModal(); toast('Repuesto agregado');
+    renderOrderDetail(document.getElementById('main-content'), orderId);
+  };
+  if (pending===0) return finish();
+  Array.from(files).forEach(f => {
+    const r = new FileReader();
+    r.onload = e => { fotos.push(e.target.result); if(--pending===0) finish(); };
+    r.readAsDataURL(f);
+  });
+}
+function removePart(orderId, idx) {
+  const o = state.orders.find(x=>x.id===orderId);
+  if (o?.repuestos) { o.repuestos.splice(idx,1); saveData(); renderOrderDetail(document.getElementById('main-content'), orderId); }
+}
+
+// ===================== NEW ORDER =====================
+function openNewOrder() {
+  openModal(`
+    <div class="modal-header"><h3>Nueva orden de trabajo</h3><button class="modal-close" onclick="closeModal()">✕</button></div>
+    <div class="form-group">
+      <label>Cliente</label>
+      <select id="no-client" onchange="onClientSelect()">
+        <option value="">— Seleccionar o crear nuevo —</option>
+        ${state.clients.map(c=>`<option value="${c.id}">${c.name} (${c.phone||''})</option>`).join('')}
+        <option value="new">+ Nuevo cliente</option>
+      </select>
+    </div>
+    <div id="new-client-fields" class="hidden">
+      <div class="form-group"><label>Nombre *</label><input id="nc-name" /></div>
+      <div class="form-group"><label>Teléfono *</label><input id="nc-phone" type="tel" placeholder="+56 9 ..." /></div>
+      <div class="form-group"><label>Email</label><input id="nc-email" type="email" /></div>
+    </div>
+    <div class="form-group">
+      <label>Vehículo</label>
+      <select id="no-vehicle"><option value="">— Primero elige cliente —</option></select>
+    </div>
+    <div id="new-vehicle-fields" class="hidden">
+      <div class="form-row">
+        <div class="form-group"><label>Patente *</label><input id="nv-patente" style="text-transform:uppercase" placeholder="ABCD12" /></div>
+        <div class="form-group"><label>Año</label><input id="nv-año" type="number" /></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Marca *</label><input id="nv-marca" /></div>
+        <div class="form-group"><label>Modelo *</label><input id="nv-modelo" /></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Color</label><input id="nv-color" /></div>
+        <div class="form-group"><label>Combustible</label>
+          <select id="nv-comb"><option>Gasolina</option><option>Diésel</option><option>Híbrido</option><option>Eléctrico</option><option>GLP</option></select>
+        </div>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Kilometraje *</label><input id="no-km" type="number" /></div>
+      <div class="form-group"><label>Combustible</label>
+        <select id="no-fuel"><option>Vacío</option><option>1/4</option><option>1/2</option><option selected>3/4</option><option>Lleno</option></select>
+      </div>
+    </div>
+    <div class="form-group"><label>Motivo de ingreso *</label><textarea id="no-motivo" placeholder="Ej: Ruido en frenos, mantención..."></textarea></div>
+    <div class="form-group">
+      <label>Asignar mecánico</label>
+      <select id="no-worker">
+        <option value="">— Sin asignar —</option>
+        ${state.workers.filter(w=>w.role==='worker').map(w=>`<option value="${w.id}">${w.name}</option>`).join('')}
+      </select>
+    </div>
+    <button class="btn-primary btn-block" onclick="createOrder()">Crear orden de trabajo</button>
+  `);
+}
+function onClientSelect() {
+  const val = document.getElementById('no-client').value;
+  const newC = document.getElementById('new-client-fields');
+  const newV = document.getElementById('new-vehicle-fields');
+  const vehSel = document.getElementById('no-vehicle');
+  if (val==='new') {
+    newC.classList.remove('hidden'); newV.classList.remove('hidden');
+    vehSel.innerHTML = '<option value="new">+ Nuevo vehículo</option>';
+  } else if (val) {
+    newC.classList.add('hidden');
+    const vehicles = state.vehicles.filter(v=>v.clientId==val);
+    vehSel.innerHTML = `<option value="">— Seleccionar —</option>
+      ${vehicles.map(v=>`<option value="${v.id}">${v.patente} · ${v.marca} ${v.modelo}</option>`).join('')}
+      <option value="new">+ Nuevo vehículo</option>`;
+    newV.classList.add('hidden');
+    vehSel.onchange = function(){ this.value==='new' ? newV.classList.remove('hidden') : newV.classList.add('hidden'); };
+  }
+}
+function createOrder() {
+  let clientId = document.getElementById('no-client').value;
+  let vehicleId = document.getElementById('no-vehicle').value;
+  const km = parseInt(document.getElementById('no-km').value);
+  const motivo = document.getElementById('no-motivo').value.trim();
+  if (!motivo || !km) return toast('Completa kilometraje y motivo');
+
+  if (clientId==='new') {
+    const name = document.getElementById('nc-name').value.trim();
+    const phone = document.getElementById('nc-phone').value.trim();
+    if (!name||!phone) return toast('Nombre y teléfono obligatorios');
+    clientId = uid();
+    state.clients.push({id:clientId, name, phone, email:document.getElementById('nc-email').value.trim(), notes:''});
+  } else clientId = parseInt(clientId);
+
+  if (vehicleId==='new' || !vehicleId) {
+    const patente = (document.getElementById('nv-patente').value||'').trim().toUpperCase();
+    const marca = document.getElementById('nv-marca').value.trim();
+    const modelo = document.getElementById('nv-modelo').value.trim();
+    if (!patente||!marca||!modelo) return toast('Patente, marca y modelo obligatorios');
+    const existing = state.vehicles.find(v=>v.patente===patente);
+    if (existing) { vehicleId = existing.id; existing.km = km; }
+    else {
+      vehicleId = uid();
+      state.vehicles.push({
+        id:vehicleId, clientId:parseInt(clientId), patente, marca, modelo,
+        año:parseInt(document.getElementById('nv-año').value)||null,
+        color:document.getElementById('nv-color').value.trim(),
+        combustible:document.getElementById('nv-comb').value, km, notes:''
+      });
+    }
+  } else {
+    vehicleId = parseInt(vehicleId);
+    const v = getVehicle(vehicleId);
+    if (v) v.km = km;
+  }
+
+  const order = {
+    id:uid(), number:genOrderNumber(), clientId:parseInt(clientId), vehicleId:parseInt(vehicleId),
+    token:genToken(), status:'Ingresado', fechaIngreso:new Date().toISOString(),
+    kmIngreso:km, combustibleNivel:document.getElementById('no-fuel').value, motivo,
+    diagnostico:'', trabajosRealizados:[], mecánicoId:parseInt(document.getElementById('no-worker').value)||null,
+    repuestos:[], fotos:[], inspeccion:{}, observaciones:'', fechaTermino:null, fechaEntrega:null,
+    pagoEstado:'Pendiente', otrosCostos:0, presupuestoVisible:true, solicitudes:[]
+  };
+  state.orders.push(order);
+  saveData(); closeModal(); toast('Orden '+order.number+' creada');
+  openOrder(order.id);
+}
+
+// ===================== CLIENTS =====================
+function renderClients(el) {
+  el.innerHTML = `
+    <div class="search-box"><input type="text" id="search-clients" placeholder="Buscar cliente o patente..." oninput="filterClients()" /></div>
+    <button class="btn-primary btn-block" style="margin-bottom:16px" onclick="openNewClient()">+ Nuevo cliente</button>
+    <div id="clients-list">
+      ${state.clients.length===0 ? `<div class="empty-state"><div class="icon">👥</div>No hay clientes</div>`
+        : state.clients.map(c=>clientCard(c)).join('')}
+    </div>
+  `;
+}
+function clientCard(c) {
+  const vehicles = state.vehicles.filter(v=>v.clientId===c.id);
+  return `<div class="card">
+    <div class="card-title">${c.name}</div>
+    <div class="card-meta">${c.phone||''} ${c.email?'· '+c.email:''}</div>
+    <div style="margin-top:10px">
+      ${vehicles.map(v=>`<span class="chip" onclick="showVehicleHistory(${v.id})" style="cursor:pointer">${v.patente} · ${v.marca} ${v.modelo}</span>`).join('')
+        || `<span style="color:var(--text2);font-size:13px">Sin vehículos</span>`}
+    </div>
+    <div style="margin-top:10px;display:flex;gap:8px">
+      <button class="btn-secondary btn-sm" onclick="openEditClient(${c.id})">Editar</button>
+      <button class="btn-secondary btn-sm" onclick="openAddVehicle(${c.id})">+ Vehículo</button>
+      <button class="btn-secondary btn-sm" onclick="openAddMaintenance(${c.id})">🔧 Mantención</button>
+    </div>
+  </div>`;
+}
+function filterClients() {
+  const q = (document.getElementById('search-clients')?.value||'').toLowerCase();
+  const list = document.getElementById('clients-list');
+  const filtered = state.clients.filter(c => {
+    const vehicles = state.vehicles.filter(v=>v.clientId===c.id);
+    return c.name.toLowerCase().includes(q) || (c.phone||'').includes(q) || vehicles.some(v=>v.patente.toLowerCase().includes(q));
+  });
+  list.innerHTML = filtered.length===0 ? `<div class="empty-state">Sin resultados</div>` : filtered.map(c=>clientCard(c)).join('');
+}
+function openNewClient() {
+  openModal(`
+    <div class="modal-header"><h3>Nuevo cliente</h3><button class="modal-close" onclick="closeModal()">✕</button></div>
+    <div class="form-group"><label>Nombre *</label><input id="cl-name" /></div>
+    <div class="form-group"><label>Teléfono *</label><input id="cl-phone" type="tel" /></div>
+    <div class="form-group"><label>Email</label><input id="cl-email" type="email" /></div>
+    <div class="form-group"><label>Observaciones</label><textarea id="cl-notes"></textarea></div>
+    <button class="btn-primary btn-block" onclick="saveClient()">Guardar</button>
+  `);
+}
+function openEditClient(id) {
+  const c = getClient(id);
+  openModal(`
+    <div class="modal-header"><h3>Editar cliente</h3><button class="modal-close" onclick="closeModal()">✕</button></div>
+    <div class="form-group"><label>Nombre *</label><input id="cl-name" value="${c.name}" /></div>
+    <div class="form-group"><label>Teléfono *</label><input id="cl-phone" type="tel" value="${c.phone||''}" /></div>
+    <div class="form-group"><label>Email</label><input id="cl-email" type="email" value="${c.email||''}" /></div>
+    <div class="form-group"><label>Observaciones</label><textarea id="cl-notes">${c.notes||''}</textarea></div>
+    <button class="btn-primary btn-block" onclick="saveClient(${id})">Guardar</button>
+  `);
+}
+function saveClient(id) {
+  const name = document.getElementById('cl-name').value.trim();
+  const phone = document.getElementById('cl-phone').value.trim();
+  if (!name||!phone) return toast('Nombre y teléfono obligatorios');
+  if (id) {
+    const c = getClient(id);
+    c.name=name; c.phone=phone;
+    c.email=document.getElementById('cl-email').value.trim();
+    c.notes=document.getElementById('cl-notes').value.trim();
+  } else {
+    state.clients.push({id:uid(), name, phone,
+      email:document.getElementById('cl-email').value.trim(),
+      notes:document.getElementById('cl-notes').value.trim()});
+  }
+  saveData(); closeModal(); toast('Cliente guardado'); navigate('clients');
+}
+function openAddVehicle(clientId) {
+  openModal(`
+    <div class="modal-header"><h3>Nuevo vehículo</h3><button class="modal-close" onclick="closeModal()">✕</button></div>
+    <div class="form-row">
+      <div class="form-group"><label>Patente *</label><input id="ve-patente" style="text-transform:uppercase" /></div>
+      <div class="form-group"><label>Año</label><input id="ve-año" type="number" /></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Marca *</label><input id="ve-marca" /></div>
+      <div class="form-group"><label>Modelo *</label><input id="ve-modelo" /></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Color</label><input id="ve-color" /></div>
+      <div class="form-group"><label>Combustible</label>
+        <select id="ve-comb"><option>Gasolina</option><option>Diésel</option><option>Híbrido</option><option>Eléctrico</option></select>
+      </div>
+    </div>
+    <div class="form-group"><label>Kilometraje actual</label><input id="ve-km" type="number" /></div>
+    <button class="btn-primary btn-block" onclick="saveVehicle(${clientId})">Guardar vehículo</button>
+  `);
+}
+function saveVehicle(clientId) {
+  const patente = document.getElementById('ve-patente').value.trim().toUpperCase();
+  const marca = document.getElementById('ve-marca').value.trim();
+  const modelo = document.getElementById('ve-modelo').value.trim();
+  if (!patente||!marca||!modelo) return toast('Patente, marca y modelo obligatorios');
+  if (state.vehicles.find(v=>v.patente===patente)) return toast('Ya existe un vehículo con esa patente');
+  state.vehicles.push({
+    id:uid(), clientId, patente, marca, modelo,
+    año:parseInt(document.getElementById('ve-año').value)||null,
+    color:document.getElementById('ve-color').value.trim(),
+    combustible:document.getElementById('ve-comb').value,
+    km:parseInt(document.getElementById('ve-km').value)||0, notes:''
+  });
+  saveData(); closeModal(); toast('Vehículo agregado'); navigate('clients');
+}
+function showVehicleHistory(vehicleId) {
+  const v = getVehicle(vehicleId), c = getClient(v.clientId);
+  const orders = state.orders.filter(o=>o.vehicleId===vehicleId).sort((a,b)=>new Date(b.fechaIngreso)-new Date(a.fechaIngreso));
+  const maints = state.maintenances.filter(m=>m.vehicleId===vehicleId);
+  openModal(`
+    <div class="modal-header"><h3>Historial ${v.patente}</h3><button class="modal-close" onclick="closeModal()">✕</button></div>
+    <div class="card" style="margin-bottom:12px">
+      <strong>${v.marca} ${v.modelo}</strong> (${v.año||'—'}) · ${v.color||''}<br>
+      <span style="color:var(--text2);font-size:13px">${c?.name} · ${(v.km||0).toLocaleString('es-CL')} km actuales</span>
+    </div>
+    ${maints.length ? `
+      <div class="section-title">Mantenimientos configurados</div>
+      ${maints.map(m=>`<div class="card" style="border-left:4px solid var(--info)">
+        <strong>${m.tipo}</strong><br>
+        <span style="font-size:13px;color:var(--text2)">Cada ${m.intervalKm?.toLocaleString('es-CL')||'—'} km o ${m.intervalMonths||'—'} meses · Próximo: ${m.nextKm?.toLocaleString('es-CL')||'—'} km</span>
+      </div>`).join('')}
+    ` : ''}
+    <div class="section-title">Órdenes</div>
+    ${orders.length===0 ? `<div class="empty-state">Sin historial</div>`
+      : orders.map(o=>`<div class="card" style="cursor:pointer" onclick="closeModal();openOrder(${o.id})">
+          <div class="card-header">
+            <div class="card-title">${o.number}</div>
+            <span class="status-badge ${STATUS_CLASS[o.status]}">${o.status}</span>
+          </div>
+          <div class="card-meta">${formatDate(o.fechaIngreso)} · ${(o.kmIngreso||0).toLocaleString('es-CL')} km</div>
+          <div style="font-size:13px;margin-top:4px">${o.motivo||''}</div>
+        </div>`).join('')}
+  `);
+}
+
+// ===================== MAINTENANCE =====================
+function openAddMaintenance(clientId) {
+  const vehicles = state.vehicles.filter(v=>v.clientId===clientId);
+  if (!vehicles.length) return toast('Primero agrega un vehículo');
+  openModal(`
+    <div class="modal-header"><h3>Configurar mantención</h3><button class="modal-close" onclick="closeModal()">✕</button></div>
+    <div class="form-group">
+      <label>Vehículo</label>
+      <select id="mt-vehicle">${vehicles.map(v=>`<option value="${v.id}">${v.patente} · ${v.marca} ${v.modelo}</option>`).join('')}</select>
+    </div>
+    <div class="form-group">
+      <label>Tipo de mantención</label>
+      <select id="mt-tipo">${MAINT_TYPES.map(t=>`<option>${t}</option>`).join('')}</select>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Intervalo (km)</label><input id="mt-km" type="number" value="5000" /></div>
+      <div class="form-group"><label>Intervalo (meses)</label><input id="mt-months" type="number" value="12" /></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Último km</label><input id="mt-lastkm" type="number" /></div>
+      <div class="form-group"><label>Última fecha</label><input id="mt-lastdate" type="date" /></div>
+    </div>
+    <button class="btn-primary btn-block" onclick="saveMaintenance()">Guardar</button>
+  `);
+}
+function saveMaintenance() {
+  const vehicleId = parseInt(document.getElementById('mt-vehicle').value);
+  const v = getVehicle(vehicleId);
+  const intervalKm = parseInt(document.getElementById('mt-km').value)||5000;
+  const intervalMonths = parseInt(document.getElementById('mt-months').value)||12;
+  const lastKm = parseInt(document.getElementById('mt-lastkm').value)||v?.km||0;
+  const lastDate = document.getElementById('mt-lastdate').value || new Date().toISOString().slice(0,10);
+  const nextDate = new Date(lastDate);
+  nextDate.setMonth(nextDate.getMonth() + intervalMonths);
+  state.maintenances.push({
+    id:uid(), vehicleId, tipo:document.getElementById('mt-tipo').value,
+    lastKm, lastDate, intervalKm, intervalMonths,
+    nextKm: lastKm + intervalKm, nextDate: nextDate.toISOString().slice(0,10)
+  });
+  saveData(); closeModal(); toast('Mantención configurada');
+}
+
+// ===================== LABORS CATALOG =====================
+function renderLabors(el) {
+  if (!isAdmin()) {
+    el.innerHTML = `<div class="empty-state"><div class="icon">🔒</div>Solo el administrador puede ver las tarifas</div>`;
+    return;
+  }
+  el.innerHTML = `
+    <div class="section-title">Catálogo de mano de obra <button class="btn-primary btn-sm" onclick="openAddLaborCatalog()">+ Agregar</button></div>
+    <p style="font-size:13px;color:var(--text2);margin-bottom:16px">Estos precios son privados. Los mecánicos no pueden verlos.</p>
+    ${state.labors.map(l=>`
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">${l.name}</div>
+          <strong style="color:var(--accent)">${formatMoney(l.price)}</strong>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:8px">
+          <button class="btn-secondary btn-sm" onclick="editLaborCatalog(${l.id})">Editar</button>
+          <button class="btn-danger btn-sm" onclick="deleteLaborCatalog(${l.id})">Eliminar</button>
+        </div>
+      </div>`).join('')}
+  `;
+}
+function openAddLaborCatalog() {
+  openModal(`
+    <div class="modal-header"><h3>Nuevo trabajo</h3><button class="modal-close" onclick="closeModal()">✕</button></div>
+    <div class="form-group"><label>Nombre</label><input id="lb-name" /></div>
+    <div class="form-group"><label>Precio</label><input id="lb-price" type="number" /></div>
+    <button class="btn-primary btn-block" onclick="saveLaborCatalog()">Guardar</button>
+  `);
+}
+function editLaborCatalog(id) {
+  const l = state.labors.find(x=>x.id===id);
+  openModal(`
+    <div class="modal-header"><h3>Editar trabajo</h3><button class="modal-close" onclick="closeModal()">✕</button></div>
+    <div class="form-group"><label>Nombre</label><input id="lb-name" value="${l.name}" /></div>
+    <div class="form-group"><label>Precio</label><input id="lb-price" type="number" value="${l.price}" /></div>
+    <button class="btn-primary btn-block" onclick="saveLaborCatalog(${id})">Guardar</button>
+  `);
+}
+function saveLaborCatalog(id) {
+  const name = document.getElementById('lb-name').value.trim();
+  const price = parseInt(document.getElementById('lb-price').value)||0;
+  if (!name) return toast('Nombre obligatorio');
+  if (id) { const l=state.labors.find(x=>x.id===id); l.name=name; l.price=price; }
+  else state.labors.push({id:uid(), name, price});
+  saveData(); closeModal(); navigate('labors');
+}
+function deleteLaborCatalog(id) {
+  if (!confirm('¿Eliminar este trabajo del catálogo?')) return;
+  state.labors = state.labors.filter(l=>l.id!==id);
+  saveData(); navigate('labors');
+}
+
+// ===================== INSPECTION =====================
+function openInspection(orderId) {
+  const o = state.orders.find(x=>x.id===orderId);
+  const insp = o.inspeccion || {};
+  let html = `<div class="modal-header"><h3>Lista de inspección</h3><button class="modal-close" onclick="closeModal()">✕</button></div>`;
+  for (const [cat, items] of Object.entries(INSPECTION)) {
+    html += `<div class="section-title" style="text-transform:capitalize">${cat}</div>`;
+    items.forEach(item => {
+      const key = cat+'_'+item;
+      const data = insp[key] || {estado:'OK', obs:''};
+      html += `<div class="check-item">
+        <div class="check-item-header">
+          <strong style="flex:1;font-size:14px">${item}</strong>
+          <select id="insp-${key}" style="width:120px">
+            <option value="OK" ${data.estado==='OK'?'selected':''}>OK</option>
+            <option value="Observación" ${data.estado==='Observación'?'selected':''}>Observación</option>
+            <option value="Dañado" ${data.estado==='Dañado'?'selected':''}>Dañado</option>
+          </select>
+        </div>
+        <input type="text" id="insp-obs-${key}" placeholder="Observación..." value="${data.obs||''}" />
+      </div>`;
+    });
+  }
+  html += `<button class="btn-primary btn-block" style="margin-top:16px" onclick="saveInspection(${orderId})">Guardar inspección</button>`;
+  openModal(html);
+}
+function saveInspection(orderId) {
+  const o = state.orders.find(x=>x.id===orderId);
+  if (!o) return;
+  o.inspeccion = {};
+  for (const [cat, items] of Object.entries(INSPECTION)) {
+    items.forEach(item => {
+      const key = cat+'_'+item;
+      o.inspeccion[key] = {
+        estado: document.getElementById('insp-'+key).value,
+        obs: document.getElementById('insp-obs-'+key).value.trim()
+      };
+    });
+  }
+  saveData(); closeModal(); toast('Inspección guardada');
+}
+
+// ===================== QR & CLIENT VIEW =====================
+function showQR(orderId) {
+  const o = state.orders.find(x=>x.id===orderId);
+  const url = location.href.split('?')[0] + '?orden=' + o.token;
+  openModal(`
+    <div class="modal-header"><h3>Código QR del cliente</h3><button class="modal-close" onclick="closeModal()">✕</button></div>
+    <p style="text-align:center;font-size:13px;color:var(--text2);margin-bottom:12px">
+      El cliente puede escanear este código o abrir el enlace para ver el estado de su vehículo.
+    </p>
+    <div class="qr-container" id="qr-box"></div>
+    <div style="text-align:center;margin-top:12px">
+      <input type="text" value="${url}" readonly style="font-size:12px;text-align:center" onclick="this.select()" />
+      <button class="btn-secondary btn-sm" style="margin-top:8px" onclick="navigator.clipboard.writeText('${url}');toast('Enlace copiado')">Copiar enlace</button>
+    </div>
+    <button class="btn-primary btn-block" style="margin-top:16px" onclick="window.open('?orden=${o.token}','_blank')">Abrir vista cliente</button>
+  `);
+  setTimeout(() => {
+    document.getElementById('qr-box').innerHTML = '';
+    new QRCode(document.getElementById('qr-box'), {text:url, width:180, height:180, colorDark:'#0b1220', colorLight:'#ffffff'});
+  }, 80);
+}
+function renderClientView(token) {
+  document.getElementById('login-screen').classList.add('hidden');
+  document.getElementById('app').classList.add('hidden');
+  const view = document.getElementById('client-view');
+  view.classList.remove('hidden');
+  const o = state.orders.find(x=>x.token===token);
+  if (!o) {
+    view.innerHTML = `<div class="client-header"><div class="logo">Work<span style="color:var(--accent)">ar</span></div></div>
+      <div class="empty-state"><div class="icon">🔍</div><p>Orden no encontrada o enlace inválido.</p></div>`;
+    return;
+  }
+  const v = getVehicle(o.vehicleId), c = getClient(o.clientId);
+  const totalLabors = (o.trabajosRealizados||[]).reduce((s,t)=>s+(t.price||0),0);
+  const totalParts = (o.repuestos||[]).reduce((s,p)=>s+(p.total||0),0);
+  const total = totalLabors + totalParts + (o.otrosCostos||0);
+  const statusIdx = STATUSES.indexOf(o.status);
+
+  view.innerHTML = `
+    <div class="client-header">
+      <div class="logo">Work<span style="color:var(--accent)">ar</span></div>
+      <p style="color:var(--text2);font-size:14px">Consulta de tu vehículo</p>
+    </div>
+    <div class="card" style="text-align:center">
+      <div style="font-size:26px;font-weight:800">${v?.patente||'—'}</div>
+      <div style="color:var(--text2)">${v?.marca||''} ${v?.modelo||''} · ${c?.name||''}</div>
+      <div style="margin-top:14px"><span class="status-badge ${STATUS_CLASS[o.status]}" style="font-size:14px;padding:6px 16px">${o.status}</span></div>
+    </div>
+    <div class="progress-steps">
+      ${STATUSES.map((s,i)=>`<div class="step ${i<statusIdx?'done':''} ${i===statusIdx?'active':''}">
+        <div class="step-dot">${i<statusIdx?'✓':(i+1)}</div>
+        <div class="step-label">${s.split(' ')[0]}</div>
+      </div>`).join('')}
+    </div>
+    <div class="card">
+      <div class="form-row">
+        <div><label>Ingreso</label><div>${formatDate(o.fechaIngreso)}</div></div>
+        <div><label>Kilometraje</label><div>${(o.kmIngreso||0).toLocaleString('es-CL')} km</div></div>
+      </div>
+      ${o.motivo?`<div style="margin-top:12px"><label>Motivo</label><div>${o.motivo}</div></div>`:''}
+      ${o.diagnostico?`<div style="margin-top:12px"><label>Diagnóstico</label><div>${o.diagnostico}</div></div>`:''}
+    </div>
+    ${(o.trabajosRealizados||[]).length ? `
+      <div class="section-title">Trabajos informados</div>
+      <div class="card">${(o.trabajosRealizados||[]).map(t=>`<div style="padding:6px 0">• ${t.name}</div>`).join('')}</div>
+    ` : ''}
+    ${o.presupuestoVisible ? `
+      <div class="section-title">Presupuesto</div>
+      <div class="card">
+        ${(o.repuestos||[]).length ? `<div style="margin-bottom:10px"><strong>Repuestos</strong>
+          ${(o.repuestos||[]).map(p=>`<div style="display:flex;justify-content:space-between;font-size:13px;padding:4px 0">
+            <span>${p.name} ×${p.cantidad}</span><span>${formatMoney(p.total)}</span></div>`).join('')}</div>` : ''}
+        <div style="display:flex;justify-content:space-between;font-size:18px;margin-top:8px">
+          <strong>Total estimado</strong><strong style="color:var(--accent)">${formatMoney(total)}</strong>
+        </div>
+        <p style="font-size:12px;color:var(--text2);margin-top:8px">* El detalle de mano de obra es gestionado internamente por el taller.</p>
+      </div>
+    ` : ''}
+    <div class="card" style="text-align:center">
+      <p style="font-size:14px;margin-bottom:14px">¿Tienes dudas o necesitas una alternativa más económica?</p>
+      <a href="tel:${c?.phone||''}" class="btn-primary btn-block" style="text-decoration:none;margin-bottom:8px">📞 Llamar al taller</a>
+      <button class="btn-secondary btn-block" onclick="requestAlternative('${o.token}')">💬 Solicitar alternativa económica</button>
+    </div>
+    ${o.fechaEntrega ? `<div class="card" style="border-left:4px solid var(--success)"><strong>Vehículo entregado</strong><br>
+      <span style="font-size:13px;color:var(--text2)">${formatDate(o.fechaEntrega)}</span></div>` : ''}
+    <p style="text-align:center;font-size:12px;color:var(--text2);margin-top:28px">Powered by Workar · Solo lectura</p>
+  `;
+}
+function requestAlternative(token) {
+  const o = state.orders.find(x=>x.token===token);
+  if (o) {
+    if (!o.solicitudes) o.solicitudes = [];
+    o.solicitudes.push({fecha:new Date().toISOString(), tipo:'alternativa_economica'});
+    saveData();
+    toast('Solicitud enviada al taller. Te contactarán pronto.');
+  }
+}
+
+// ===================== PDF =====================
+function generatePDF(orderId) {
+  const o = state.orders.find(x=>x.id===orderId);
+  const v = getVehicle(o.vehicleId), c = getClient(o.clientId);
+  const {jsPDF} = window.jspdf;
+  const doc = new jsPDF();
+  const totalLabors = (o.trabajosRealizados||[]).reduce((s,t)=>s+(t.price||0),0);
+  const totalParts = (o.repuestos||[]).reduce((s,p)=>s+(p.total||0),0);
+  const total = totalLabors + totalParts + (o.otrosCostos||0);
+  let y = 20;
+  doc.setFontSize(22); doc.setTextColor(249,115,22); doc.text('Workar', 20, y);
+  doc.setFontSize(10); doc.setTextColor(100); doc.text('Gestión de talleres automotrices', 20, y+7);
+  y = 42;
+  doc.setFontSize(14); doc.setTextColor(0); doc.text('Orden de Trabajo: '+o.number, 20, y);
+  doc.setFontSize(10); doc.text('Estado: '+o.status, 20, y+7); doc.text('Fecha ingreso: '+formatDate(o.fechaIngreso), 20, y+14);
+  y += 28;
+  doc.setFontSize(12); doc.text('Cliente', 20, y);
+  doc.setFontSize(10); doc.text((c?.name||'')+'  ·  '+(c?.phone||''), 20, y+6);
+  y += 16;
+  doc.setFontSize(12); doc.text('Vehículo', 20, y);
+  doc.setFontSize(10); doc.text(`${v?.patente||''}  ·  ${v?.marca||''} ${v?.modelo||''} (${v?.año||''})  ·  ${(o.kmIngreso||0).toLocaleString('es-CL')} km`, 20, y+6);
+  y += 16;
+  if (o.motivo) {
+    doc.setFontSize(12); doc.text('Motivo / Diagnóstico', 20, y);
+    doc.setFontSize(10);
+    const lines = doc.splitTextToSize((o.motivo||'')+(o.diagnostico?'\n'+o.diagnostico:''), 170);
+    doc.text(lines, 20, y+6); y += 6 + lines.length*5;
+  }
+  y += 8;
+  if ((o.trabajosRealizados||[]).length) {
+    doc.setFontSize(12); doc.text('Trabajos realizados', 20, y); y += 7;
+    doc.setFontSize(10);
+    (o.trabajosRealizados||[]).forEach(t => { doc.text('• '+t.name+'  '+formatMoney(t.price), 22, y); y += 5; });
+  }
+  y += 6;
+  if ((o.repuestos||[]).length) {
+    doc.setFontSize(12); doc.text('Repuestos', 20, y); y += 7;
+    doc.setFontSize(10);
+    (o.repuestos||[]).forEach(p => { doc.text(`• ${p.name} ×${p.cantidad}  ${formatMoney(p.total)}`, 22, y); y += 5; });
+  }
+  y += 12;
+  doc.setFontSize(13); doc.text('TOTAL: '+formatMoney(total), 20, y);
+  doc.setFontSize(10); doc.text('Estado de pago: '+o.pagoEstado, 20, y+7);
+  if (o.observaciones) {
+    y += 16; doc.setFontSize(12); doc.text('Observaciones', 20, y);
+    doc.setFontSize(10); doc.text(doc.splitTextToSize(o.observaciones, 170), 20, y+6);
+  }
+  doc.setFontSize(8); doc.setTextColor(150);
+  doc.text('Generado por Workar · '+new Date().toLocaleString('es-CL'), 20, 285);
+  doc.save(`Workar_${o.number}.pdf`);
+  toast('PDF descargado');
+}
+
+// ===================== MORE / WORKERS =====================
+function renderMore(el) {
+  el.innerHTML = `
+    <div class="section-title">Configuración</div>
+    ${isAdmin() ? `
+      <div class="card" style="cursor:pointer" onclick="navigate('labors')">
+        <div class="card-title">💰 Tarifas de mano de obra</div>
+        <div class="card-meta">Administrar catálogo privado</div>
+      </div>
+      <div class="card" style="cursor:pointer" onclick="openWorkers()">
+        <div class="card-title">👷 Trabajadores</div>
+        <div class="card-meta">${state.workers.filter(w=>w.role==='worker').map(w=>w.name).join(', ')||'Ninguno'} · Gestionar</div>
+      </div>
+    ` : ''}
+    <div class="card" style="cursor:pointer" onclick="exportData()">
+      <div class="card-title">📤 Exportar datos</div>
+      <div class="card-meta">Descargar respaldo JSON</div>
+    </div>
+    <div class="card" style="cursor:pointer" onclick="if(confirm('¿Borrar todos los datos y empezar de cero?')){localStorage.removeItem('workar_v2');localStorage.removeItem('workar_user');location.reload()}">
+      <div class="card-title" style="color:var(--danger)">🗑️ Reiniciar datos</div>
+      <div class="card-meta">Elimina todo y vuelve a la demo</div>
+    </div>
+    <div style="margin-top:28px;text-align:center;color:var(--text2);font-size:13px">
+      Workar v2.0 · Versión definitiva (prototipo)<br>
+      Datos guardados localmente en este dispositivo
+    </div>
+  `;
+}
+function openWorkers() {
+  openModal(`
+    <div class="modal-header"><h3>Trabajadores</h3><button class="modal-close" onclick="closeModal()">✕</button></div>
+    ${state.workers.filter(w=>w.role==='worker').map(w=>`
+      <div class="card">
+        <div class="card-title">${w.name}</div>
+        <div class="card-meta">Usuario: ${w.username}</div>
+      </div>
+    `).join('') || '<p style="color:var(--text2)">No hay trabajadores</p>'}
+    <button class="btn-primary btn-block" style="margin-top:12px" onclick="openAddWorker()">+ Nuevo trabajador</button>
+  `);
+}
+function openAddWorker() {
+  openModal(`
+    <div class="modal-header"><h3>Nuevo trabajador</h3><button class="modal-close" onclick="closeModal()">✕</button></div>
+    <div class="form-group"><label>Nombre</label><input id="wk-name" /></div>
+    <div class="form-group"><label>Usuario</label><input id="wk-user" /></div>
+    <div class="form-group"><label>Contraseña</label><input id="wk-pass" type="password" /></div>
+    <button class="btn-primary btn-block" onclick="saveWorker()">Crear</button>
+  `);
+}
+function saveWorker() {
+  const name = document.getElementById('wk-name').value.trim();
+  const username = document.getElementById('wk-user').value.trim().toLowerCase();
+  const password = document.getElementById('wk-pass').value;
+  if (!name||!username||!password) return toast('Completa todos los campos');
+  if (state.workers.find(w=>w.username===username)) return toast('Ese usuario ya existe');
+  state.workers.push({id:uid(), name, username, password, role:'worker'});
+  saveData(); closeModal(); toast('Trabajador creado'); openWorkers();
+}
+function exportData() {
+  const data = localStorage.getItem('workar_v2');
+  const blob = new Blob([data], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'workar_backup_'+new Date().toISOString().slice(0,10)+'.json';
+  a.click();
+  toast('Datos exportados');
+}
+
+// ===================== MODAL =====================
+function openModal(html) {
+  document.getElementById('modal-content').innerHTML = html;
+  document.getElementById('modal-overlay').classList.remove('hidden');
+}
+function closeModal() {
+  document.getElementById('modal-overlay').classList.add('hidden');
+}
+
+// ===================== INIT =====================
+function init() {
+  loadData();
+  const params = new URLSearchParams(location.search);
+  const token = params.get('orden');
+  if (token) { renderClientView(token); return; }
+  const saved = localStorage.getItem('workar_user');
+  if (saved) {
+    try { state.user = JSON.parse(saved); showApp(); return; } catch(e){}
+  }
+  document.getElementById('login-screen').classList.remove('hidden');
+}
+init();
+</script>
+</body>
+</html>
